@@ -7,4 +7,4 @@ Catalog will be updated later.
 
 If there are some typos,you can leave comments.
 
-Now Chinese Version is supproted,English Version will be upgrated if needed.
+Now Chinese Version is supported,English Version will be upgrated if needed.
