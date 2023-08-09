@@ -121,6 +121,8 @@ Set Abstraction相当于一个对点云进行一次抽象的操作，可以堆�
 3. 基于卷积网络和图像检测算法产生检测框
 
 #### VoxelNet
+><https://arxiv.org/abs/1711.06396>
+
 ![](https://miro.medium.com/v2/resize:fit:720/format:webp/1*ge0k7Nb4-6Zhz7R4a-2ZBA.png)
 整体流程：
 1. 将空间划分为体素，在体素内使用VFE提取局部点云特征，得到三维的特征体
@@ -142,6 +144,8 @@ VoxelNet的问题：
 2. 角度回归精度不够（早期的很多工作都有这个问题）
 
 #### SECOND
+><https://www.mdpi.com/1424-8220/18/10/3337>
+
 SECOND针对问题的改进：
 1. 提出了针对稀疏Tensor的高效算法spconv，相比VoxelNet提速4倍
 2. 角度回归的目标值设置为了角度的正弦值，考虑了角度的周期性，提高了角度回归的精度
@@ -150,7 +154,7 @@ SECOND针对问题的改进：
 #### PointPillars
 ><https://arxiv.org/abs/1812.05784>
 
-![](https://www.researchgate.net/publication/357359269/figure/fig2/AS:1179975977844748@1658339604217/An-overview-of-the-PointPillars-network-structure-10-The-Pillar-Feature-Network.png)
+![](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FcuqDaX%2FbtrVe4mU7TR%2FlKDa3uMDvpMuS6RIBdOBs0%2Fimg.png)
 
 1. 只在地面上划分二维网格，不在高度方向划分格子，形成一系列柱体Pillars
 2. 在每个柱体内使用简化版的PointNet编码点云特征，得到2D特征图
@@ -160,19 +164,23 @@ SECOND针对问题的改进：
 
 * 按照点云数据所在的X，Y轴（不考虑Z轴）将点云数据划分为一个个的网格，凡是落入到一个网格的点云数据被视为其处在一个pillar里，或者理解为它们构成了一个Pillar。
 
-* 每个点云用一个 $D=9$ 维的向量表示，分别为 $(x,y,z,e,x_c,y_c,z_c,x_p,y_p)$ 。其中 $x,y,z,r$ 为该点云的真实坐标信息（三维）和反射强度； $x_c,y_c,z_c$ 为该点云所处Pillar中所有点的几何中心； $x_p,y_p$ 为 $x-x_c,y-y_c$ ,反映了点与几何中心的相对位置。
+* 每个点云用一个$D=9$维的向量表示，分别为$(x,y,z,e,x_c,y_c,z_c,x_p,y_p)$。其中$x,y,z,r$为该点云的真实坐标信息（三维）和反射强度；$x_c,y_c,z_c$为该点云所处Pillar中所有点的几何中心；$x_p,y_p$为$x-x_c,y-y_c$,反映了点与几何中心的相对位置。
 
-* 假设每个样本中有 $P$ 个非空的pillars，每个pillar中有 $N$ 个点云数据，那么这个样本就可以用一个 $(D,P,N)$ 张量表示。
+* 假设每个样本中有$P$个非空的pillars，每个pillar中有$N$个点云数据，那么这个样本就可以用一个$(D,P,N)$张量表示。
 
-* 怎么保证每个pillar中有 $N$ 个点云数据呢？如果每个pillar中的点云数据数据超过 $N$ 个，那么我们就随机采样至 $N$ 个；如果每个pillar中的点云数据数据少于 $N$ 个，少于的部分我们就填充为0。
+* 怎么保证每个pillar中有$N$个点云数据呢？如果每个pillar中的点云数据数据超过$N$个，那么我们就随机采样至$N$个；如果每个pillar中的点云数据数据少于$N$个，少于的部分我们就填充为0。
 
-* 这样就实现了点云数据的张量化。实现张量化后，作者利用简化版本的PointNet对张量化的点云数据进行处理和特征提取。特征提取可以理解为对点云的维度进行处理，原来的点云维度为 $D=9$ ,处理后的维度为 $C$ ,那么我们就获得了一个 $(C,P,N)$ 的张量。接着，我们按照Pillar所在维度进行Max Pooling操作，即获得了 $(C,P)$ 维度的特征图。
+* 这样就实现了点云数据的张量化。实现张量化后，作者利用简化版本的PointNet对张量化的点云数据进行处理和特征提取。特征提取可以理解为对点云的维度进行处理，原来的点云维度为$D=9$,处理后的维度为$C$,那么我们就获得了一个$(C,P,N)$的张量。接着，我们按照Pillar所在维度进行Max Pooling操作，即获得了$(C,P)$维度的特征图。
 
-* 为了获得伪图片特征，作者将 $P$ 转化为 $(H,W)$ 。那么我们就获得了形如 $(C,H,W)$ 的伪图片了。
+* 为了获得伪图片特征，作者将$P$转化为$(H,W)$。那么我们就获得了形如$(C,H,W)$的伪图片了。
 
-* 最终转化成了一张伪图片，能够告诉网络，在坐标为 $(H,W)$ 的地方的pillar有 $C$ 的信息。
+* 最终转化成了一张伪图片，能够告诉网络，在坐标为$(H,W)$的地方的pillar有$C$的信息。
 #### CenterNet
 ><https://arxiv.org/abs/1904.08189>
+
+![](https://pic1.zhimg.com/80/v2-8307252a4c79c69303161e7998907364_720w.webp)
+
+Centernet提出，针对2D检测的算法要将传统检测算法中的“以框表示物体”变成“以中心点表示物体”，将2D检测建模为物体中心的检测和额外的回归任务，一个框架就可以覆盖2D，3D，姿态估计等一系列任务
 #### CenterPoint
 ><https://arxiv.org/abs/2006.11275>
 
@@ -200,7 +208,7 @@ SECOND针对问题的改进：
 #### PointRCNN
 ><https://arxiv.org/abs/1812.04244>
 
-![](https://pic2.zhimg.com/80/v2-1770d12006b62f8a01341ad923b544ad_720w.webp)
+![](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FkOzEr%2FbtrVcLU6uCj%2F3aKsiLUyfsWNyXIhgxk71K%2Fimg.png)
 
 **两个阶段**
 * 第一阶段使用PointNet++对点云进行前景/背景点分割，基于前景点的特征产生3D候选框 
@@ -280,7 +288,7 @@ SECOND针对问题的改进：
 
 视觉算法依托于图像，图像的分辨率高，对小物体的识别率更高，同时基于图像的2D检测方法更成熟，更容易落地。但是图像不包含深度信息，需要借助图像的语义信息和多目图像之间的关系推测深度
 
-### 算法设计思路
+#### 算法设计思路
 1. 伪点云：基于单目或者多目图像预测每个位置的深度，生成“伪点云”，再利用成熟的点云检测算法。
 
 ><https://arxiv.org/abs/1812.07179>
@@ -295,4 +303,78 @@ SECOND针对问题的改进：
 
 ><https://arxiv.org/abs/2110.06922>
 ><https://arxiv.org/abs/2203.17270>
+### 伪点云
+#### Pseudo-LiDAR
+><https://arxiv.org/abs/1812.07179>
 
+![](https://www.cs.cornell.edu/~yanwang/project/plidar/cvpr2018-pipeline.png)
+
+核心思路：将同一时刻的左右两张相机图片经过单目或立体视觉深度估计生成模拟雷达的3D点云，再通过基于雷达信息的3D检测模块预测出3D检测框。
+
+#### Pseudo-LiDAR++
+><https://arxiv.org/abs/1906.06310>
+
+核心思路：在Pseudo-LiDAR的基础上改进双目摄像机的深度估计网络以解决Pseudo-LiDAR对于远处物体的检测效果不好的问题，并进一步利用4线激光雷达作为辅助来微调检测结果
+
+#### DD3D
+><https://arxiv.org/abs/2108.06417>
+
+资料链接
+><https://zhuanlan.zhihu.com/p/508794328>
+
+<img decoding="async" src="https://pic1.zhimg.com/80/v2-7e35e0d83c298d59a43bebd0f92a7ee0_720w.jpg" width="50%"><img decoding="async" src="https://owen-liuyuxuan.github.io/papers_reading_sharing.github.io/3dDetection/res/dd3d_arch.png" width="50%">
+
+核心提问：Is Pseudo-Lidar needed for Monocular 3D Object detection?
+
+伪点云是两阶段的，先预测深度，再预测框。DD3D提出了用同一个网络完成深度预测和3D物体检测。
+### 单目视觉算法
+主要为魔改2D的算法使其适配3D的任务
+#### SMOKE
+><https://arxiv.org/abs/2002.10111>
+
+基于Centernet的框架，进行热力图分支的预测和深度回归分支的预测，自底向上进行预测任务。
+
+![](https://pic3.zhimg.com/80/v2-eb67c5bdb473df63ba302798f3add41a_720w.jpg)
+
+对于热力图分支：将3D框的中心点 $(x,y,z)$ 通过内参矩阵 $K$ 投影到图像上，作为模型需要预测的2D中心点 $(x_c,y_c)$
+
+对于深度回归分支：使用预定义的均值 $\mu_z$ 和标准差 $\sigma_z$ 对深度进行标准化，即 $z=\mu_z+\delta_z\sigma_z$ ，让网络预测 $\delta_z$
+
+对于长宽高和转向角本作也提出了自己的预测方法
+
+#### FCOS 3D
+><https://arxiv.org/abs/2104.10956>
+
+![](https://gaussian37.github.io/assets/img/vision/detection/fcos3d/0.png)
+
+思路
+* 基于2D检测中的FCOS模型
+* 主干网络和FPN不变
+* 对3D框的7个预测值进行编码，使其更加适应2D检测模型
+* 增加额外预测分支预测所有的3D参数
+
+#### 小结
+SMOKE基于2D的CenterNet，设计了针对3D框的热力图分支和回归分支
+
+FCOS 3D基于2D检测的FCOS，针对3D框设计了回归的目标
+
+### 基于Transformer的多视角融合方法
+### DETR3D
+><https://arxiv.org/abs/2110.06922>
+
+![](https://tsinghua-mars-lab.github.io/detr3d/images/detr3d_model.png)
+
+核心思路：借鉴2D检测中的RETR，使用Transformer基于多视角图像特征预测3D检测框，其中的Transformer模块是针对3D任务特别设计的
+
+编码器使用ResNet+FPN提取多视角、多层次的图像特征。
+
+解码器针对3D检测设计的检测头，逐步聚合图像特征，最终预测出检测框
+
+loss是基于set prediction loss训练
+
+### DEVFormer
+><https://arxiv.org/abs/2203.17270>
+
+核心思路：在先有的多相机3D检测方法（DETR3D）中引入时序信息，在Transformer中融合时空信息
+
+![](https://pic2.zhimg.com/80/v2-387928f029237beecf3cd5ff48692251_720w.webp)
